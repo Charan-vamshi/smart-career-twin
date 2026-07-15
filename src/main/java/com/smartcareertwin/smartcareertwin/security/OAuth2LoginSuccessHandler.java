@@ -22,8 +22,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
 
-    // Use a frontend URL or local dev URL to redirect with token
-    private final String frontendRedirectUrl = "http://localhost:3000/oauth2/redirect";
+    @Value("${app.frontend.redirect-url:http://localhost:3000/oauth2/redirect}")
+    private String frontendRedirectUrl;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
