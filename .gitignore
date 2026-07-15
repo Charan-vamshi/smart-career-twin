@@ -32,4 +32,11 @@ build/
 ### VS Code ###
 .vscode/
 
+### Environment variables - never commit secrets ###
 .env
+frontend/.env
+
+### Frontend build artifacts & dependencies ###
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/

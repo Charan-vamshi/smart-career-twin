@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-glow: rgba(59,130,246,0.3);
+  --color-bg-dark: #080808;
+  --color-bg-card: #111111;
+  --color-bg-card-hover: #161616;
+  --color-border: rgba(255,255,255,0.06);
+  --color-border-hover: rgba(255,255,255,0.12);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #888888;
+  --color-text-muted: #555555;
+}
+
+html, body, #root {
+  background-color: #080808;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111111;
+}
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}
+
+/* Selection */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #ffffff;
+}
+
+/* Input reset */
+input, select, textarea {
+  background: #0d0d0d;
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(59,130,246,0.5);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+}
+
+/* Prose styling for roadmap markdown */
+.prose-dark h1, .prose-dark h2, .prose-dark h3 { color: #ffffff; }
+.prose-dark p, .prose-dark li { color: #aaaaaa; }
+.prose-dark strong { color: #ffffff; }
+.prose-dark code { background: #1a1a1a; color: #3b82f6; padding: 2px 6px; border-radius: 4px; font-size: 0.875em; }
+.prose-dark pre { background: #0d0d0d; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1.5rem; }
+.prose-dark blockquote { border-left: 3px solid #3b82f6; padding-left: 1rem; color: #888888; }
+.prose-dark hr { border-color: rgba(255,255,255,0.06); }
+.prose-dark a { color: #3b82f6; }
+.prose-dark ul li::marker { color: #3b82f6; }
