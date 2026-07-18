@@ -1,216 +1,148 @@
-import { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { DepthOfField, Bloom, EffectComposer } from '@react-three/postprocessing';
-import * as THREE from 'three';
-
-// Generate canvas texture for paper
-function createPaperTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 724; // A4 proportion
-
-  const ctx = canvas.getContext('2d')!;
-
-  // Background
-  ctx.fillStyle = '#0a0a12';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Subtle paper grain
-  for (let i = 0; i < 3000; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const alpha = Math.random() * 0.04;
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-    ctx.fillRect(x, y, 1, 1);
-  }
-
-  // Horizontal ruled lines
-  ctx.strokeStyle = 'rgba(59, 130, 246, 0.08)';
-  ctx.lineWidth = 1;
-  for (let y = 60; y < canvas.height - 40; y += 28) {
-    ctx.beginPath();
-    ctx.moveTo(40, y);
-    ctx.lineTo(canvas.width - 40, y);
-    ctx.stroke();
-  }
-
-  // Faint text blocks (simulated text lines)
-  for (let row = 0; row < 18; row++) {
-    const y = 70 + row * 28;
-    const lineWidth = 0.4 + Math.random() * 0.5;
-    ctx.strokeStyle = `rgba(100, 160, 255, ${lineWidth * 0.06})`;
-    ctx.lineWidth = 3 + Math.random() * 4;
-    ctx.lineCap = 'round';
-    const lineLen = (0.3 + Math.random() * 0.6) * (canvas.width - 80);
-    ctx.beginPath();
-    ctx.moveTo(40, y);
-    ctx.lineTo(40 + lineLen, y);
-    ctx.stroke();
-  }
-
-  // Top header block
-  ctx.fillStyle = 'rgba(59, 130, 246, 0.12)';
-  ctx.fillRect(40, 30, canvas.width * 0.6, 14);
-
-  // Blue left accent bar
-  ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
-  ctx.fillRect(0, 0, 4, canvas.height);
-
-  // Subtle border glow
-  ctx.strokeStyle = 'rgba(59, 130, 246, 0.15)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
-
-  return new THREE.CanvasTexture(canvas);
-}
-
-interface PaperProps {
-  position: [number, number, number];
-  rotation: [number, number, number];
-  scale: number;
-  speed: number;
-  rotSpeed: [number, number, number];
-  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
-  depth: number;
-  texture: THREE.CanvasTexture;
-}
-
-const Paper = ({ position, rotation, scale, speed, rotSpeed, mouseRef, depth, texture }: PaperProps) => {
-  const mesh = useRef<THREE.Mesh>(null);
-  const initPos = useRef(position);
-  const time = useRef(Math.random() * 100);
-
-  useFrame((_, delta) => {
-    if (!mesh.current) return;
-    time.current += delta * speed;
-
-    // Float drift
-    mesh.current.position.y = initPos.current[1] + Math.sin(time.current * 0.4) * 0.8;
-    mesh.current.position.x = initPos.current[0] + Math.cos(time.current * 0.25) * 0.5;
-
-    // Slow rotation
-    mesh.current.rotation.x += delta * rotSpeed[0];
-    mesh.current.rotation.y += delta * rotSpeed[1];
-    mesh.current.rotation.z += delta * rotSpeed[2];
-
-    // Mouse parallax (closer papers move more)
-    const parallaxStrength = (1 - depth) * 1.5;
-    mesh.current.position.x += (mouseRef.current.x * parallaxStrength - mesh.current.position.x + initPos.current[0]) * 0.03;
-    mesh.current.position.y += (-mouseRef.current.y * parallaxStrength - mesh.current.position.y + initPos.current[1] + Math.sin(time.current * 0.4) * 0.8) * 0.03;
-  });
-
-  return (
-    <mesh ref={mesh} position={position} rotation={rotation} scale={scale}>
-      <planeGeometry args={[2, 2.83]} /> {/* A4 proportion */}
-      <meshStandardMaterial
-        map={texture}
-        transparent
-        opacity={0.55 + (1 - depth) * 0.35}
-        roughness={0.9}
-        metalness={0.05}
-        side={THREE.DoubleSide}
-        emissive={new THREE.Color(0x0a1628)}
-        emissiveIntensity={0.3}
-      />
-    </mesh>
-  );
-};
-
-const Scene = ({ mouseRef }: { mouseRef: React.MutableRefObject<{ x: number; y: number }> }) => {
-  const texture = useMemo(() => createPaperTexture(), []);
-
-  const papers = useMemo(() => {
-    return Array.from({ length: 12 }).map((_, i) => {
-      const depth = i / 18; // 0 = near, 1 = far
-      return {
-        id: i,
-        position: [
-          (Math.random() - 0.5) * 24,
-          (Math.random() - 0.5) * 18,
-          -depth * 14 - 2,
-        ] as [number, number, number],
-        rotation: [
-          (Math.random() - 0.5) * 0.6,
-          (Math.random() - 0.5) * 0.6,
-          (Math.random() - 0.5) * Math.PI * 0.5,
-        ] as [number, number, number],
-        scale: 1.2 + Math.random() * 2,
-        speed: 0.3 + Math.random() * 0.7,
-        rotSpeed: [
-          (Math.random() - 0.5) * 0.04,
-          (Math.random() - 0.5) * 0.06,
-          (Math.random() - 0.5) * 0.02,
-        ] as [number, number, number],
-        depth,
-        texture,
-      };
-    });
-  }, [texture]);
-
-  return (
-    <>
-      <color attach="background" args={['#080808']} />
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[5, 5, 5]} intensity={0.8} color="#3b82f6" />
-      <directionalLight position={[-8, -3, -5]} intensity={0.4} color="#1e3a5f" />
-      <pointLight position={[0, 0, 4]} intensity={0.6} color="#2563eb" distance={20} />
-
-      {papers.map((p) => (
-        <Paper key={p.id} {...p} mouseRef={mouseRef} />
-      ))}
-
-      <EffectComposer>
-        <Bloom
-          luminanceThreshold={0.2}
-          luminanceSmoothing={0.9}
-          intensity={0.3}
-          mipmapBlur
-        />
-        <DepthOfField
-          focusDistance={0.005}
-          focalLength={0.2}
-          bokehScale={2}
-          height={360}
-        />
-      </EffectComposer>
-    </>
-  );
-};
+import { useEffect, useRef } from 'react';
 
 export const Background3D = () => {
+  const sceneRef = useRef<HTMLDivElement>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const lerpRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e: MouseEvent) => {
       mouseRef.current = {
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
+        x: (e.clientX / window.innerWidth - 0.5),
+        y: (e.clientY / window.innerHeight - 0.5),
       };
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', onMouseMove);
+
+    const tick = () => {
+      // Smooth lerp toward mouse
+      lerpRef.current.x += (mouseRef.current.x - lerpRef.current.x) * 0.03;
+      lerpRef.current.y += (mouseRef.current.y - lerpRef.current.y) * 0.03;
+
+      if (sceneRef.current) {
+        // Subtle 3D perspective tilt — cinematic depth parallax
+        sceneRef.current.style.transform = `
+          perspective(1200px)
+          rotateX(${lerpRef.current.y * -4}deg)
+          rotateY(${lerpRef.current.x * 4}deg)
+        `;
+      }
+
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[-1]" style={{ background: '#080808' }}>
-      <Canvas
-        camera={{ position: [0, 0, 10], fov: 55 }}
-        dpr={[1, 1]}
-        gl={{
-          antialias: false,
-          alpha: false,
-          powerPreference: 'default',
-          failIfMajorPerformanceCaveat: false,
-        }}
-        onCreated={({ gl }) => {
-          const canvas = gl.domElement;
-          canvas.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault();
-          }, false);
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: -1,
+        background: '#080808',
+        overflow: 'hidden',
+      }}
+    >
+      {/* 3D perspective scene — mouse tilts the whole layer */}
+      <div
+        ref={sceneRef}
+        style={{
+          position: 'absolute',
+          inset: '-15%',
+          transformStyle: 'preserve-3d',
+          willChange: 'transform',
         }}
       >
-        <Scene mouseRef={mouseRef} />
-      </Canvas>
+        {/* Blob 1 — large deep blue, top-left anchor */}
+        <div className="cin-blob" style={{
+          width: '75vw', height: '75vw',
+          top: '-15%', left: '-10%',
+          background: 'radial-gradient(circle, rgba(29,78,216,0.22) 0%, transparent 70%)',
+          animation: 'cin-drift-1 38s ease-in-out infinite',
+        }} />
+
+        {/* Blob 2 — indigo, bottom-right anchor */}
+        <div className="cin-blob" style={{
+          width: '65vw', height: '65vw',
+          bottom: '-20%', right: '-10%',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)',
+          animation: 'cin-drift-2 45s ease-in-out infinite',
+        }} />
+
+        {/* Blob 3 — violet, center-left */}
+        <div className="cin-blob" style={{
+          width: '55vw', height: '55vw',
+          top: '25%', left: '20%',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.13) 0%, transparent 70%)',
+          animation: 'cin-drift-3 30s ease-in-out infinite',
+        }} />
+
+        {/* Blob 4 — dark cyan, top-right */}
+        <div className="cin-blob" style={{
+          width: '50vw', height: '50vw',
+          top: '-5%', right: '5%',
+          background: 'radial-gradient(circle, rgba(8,145,178,0.11) 0%, transparent 70%)',
+          animation: 'cin-drift-4 52s ease-in-out infinite',
+        }} />
+
+        {/* Blob 5 — electric blue accent, bottom-left */}
+        <div className="cin-blob" style={{
+          width: '45vw', height: '45vw',
+          bottom: '5%', left: '10%',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)',
+          animation: 'cin-drift-5 35s ease-in-out infinite',
+        }} />
+      </div>
+
+      {/* Film grain — adds cinematic texture */}
+      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+        <filter id="grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+          <feBlend in="SourceGraphic" mode="overlay" result="blend" />
+          <feComposite in="blend" in2="SourceGraphic" operator="in" />
+        </filter>
+      </svg>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        opacity: 0.045,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'repeat',
+        backgroundSize: '200px 200px',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Vignette — cinematic edge darkening */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(0,0,0,0.75) 100%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Top & bottom letterbox bars — very subtle cinematic feel */}
+      <div style={{
+        position: 'absolute',
+        top: 0, left: 0, right: 0,
+        height: '3px',
+        background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.15), transparent)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
+        height: '3px',
+        background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.15), transparent)',
+        pointerEvents: 'none',
+      }} />
     </div>
   );
 };

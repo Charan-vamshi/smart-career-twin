@@ -1,5 +1,48 @@
 @import "tailwindcss";
 
+/* ─── Cinematic blob keyframes ─── */
+.cin-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+@keyframes cin-drift-1 {
+  0%   { transform: translate(0px,   0px)   scale(1);    opacity: 1;    }
+  20%  { transform: translate(70px, -50px)  scale(1.06); opacity: 0.85; }
+  40%  { transform: translate(-40px, 40px)  scale(0.94); opacity: 0.95; }
+  60%  { transform: translate(50px,  60px)  scale(1.08); opacity: 0.88; }
+  80%  { transform: translate(-60px, -30px) scale(1.03); opacity: 0.92; }
+  100% { transform: translate(0px,   0px)   scale(1);    opacity: 1;    }
+}
+@keyframes cin-drift-2 {
+  0%   { transform: translate(0px,   0px)   scale(1);    }
+  25%  { transform: translate(-80px,  60px) scale(1.10); }
+  50%  { transform: translate(50px,  -70px) scale(0.90); }
+  75%  { transform: translate(-30px,  40px) scale(1.05); }
+  100% { transform: translate(0px,   0px)   scale(1);    }
+}
+@keyframes cin-drift-3 {
+  0%   { transform: translate(0px,   0px)   scale(1);    }
+  33%  { transform: translate(60px,  -40px) scale(1.12); }
+  66%  { transform: translate(-50px,  50px) scale(0.92); }
+  100% { transform: translate(0px,   0px)   scale(1);    }
+}
+@keyframes cin-drift-4 {
+  0%   { transform: translate(0px,   0px)   scale(1);    }
+  30%  { transform: translate(-60px, -50px) scale(1.07); }
+  60%  { transform: translate(40px,   60px) scale(0.96); }
+  100% { transform: translate(0px,   0px)   scale(1);    }
+}
+@keyframes cin-drift-5 {
+  0%   { transform: translate(0px,   0px)   scale(1);    }
+  40%  { transform: translate(55px,   50px) scale(1.09); }
+  70%  { transform: translate(-45px, -35px) scale(0.93); }
+  100% { transform: translate(0px,   0px)   scale(1);    }
+}
+
 @theme {
   --color-accent: #3b82f6;
   --color-accent-hover: #2563eb;
