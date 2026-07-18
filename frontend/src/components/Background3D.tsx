@@ -63,24 +63,24 @@ export const Background3D = () => {
         {/* Blob 1 — large deep blue, top-left anchor */}
         <div className="cin-blob" style={{
           width: '75vw', height: '75vw',
-          top: '-15%', left: '-10%',
-          background: 'radial-gradient(circle, rgba(29,78,216,0.22) 0%, transparent 70%)',
+          top: '-10%', left: '-10%',
+          background: 'radial-gradient(circle, rgba(37,99,235,0.45) 0%, rgba(29,78,216,0.20) 40%, transparent 70%)',
           animation: 'cin-drift-1 38s ease-in-out infinite',
         }} />
 
         {/* Blob 2 — indigo, bottom-right anchor */}
         <div className="cin-blob" style={{
           width: '65vw', height: '65vw',
-          bottom: '-20%', right: '-10%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)',
+          bottom: '-10%', right: '-10%',
+          background: 'radial-gradient(circle, rgba(99,102,241,0.40) 0%, rgba(79,70,229,0.15) 40%, transparent 70%)',
           animation: 'cin-drift-2 45s ease-in-out infinite',
         }} />
 
-        {/* Blob 3 — violet, center-left */}
+        {/* Blob 3 — violet, center */}
         <div className="cin-blob" style={{
           width: '55vw', height: '55vw',
-          top: '25%', left: '20%',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.13) 0%, transparent 70%)',
+          top: '25%', left: '25%',
+          background: 'radial-gradient(circle, rgba(124,58,237,0.30) 0%, rgba(109,40,217,0.12) 40%, transparent 70%)',
           animation: 'cin-drift-3 30s ease-in-out infinite',
         }} />
 
@@ -88,15 +88,15 @@ export const Background3D = () => {
         <div className="cin-blob" style={{
           width: '50vw', height: '50vw',
           top: '-5%', right: '5%',
-          background: 'radial-gradient(circle, rgba(8,145,178,0.11) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(6,182,212,0.28) 0%, rgba(8,145,178,0.10) 40%, transparent 70%)',
           animation: 'cin-drift-4 52s ease-in-out infinite',
         }} />
 
-        {/* Blob 5 — electric blue accent, bottom-left */}
+        {/* Blob 5 — electric blue, bottom-left */}
         <div className="cin-blob" style={{
           width: '45vw', height: '45vw',
           bottom: '5%', left: '10%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.14) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(59,130,246,0.38) 0%, rgba(37,99,235,0.15) 40%, transparent 70%)',
           animation: 'cin-drift-5 35s ease-in-out infinite',
         }} />
       </div>
