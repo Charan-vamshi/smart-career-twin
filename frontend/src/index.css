@@ -58,7 +58,7 @@
 }
 
 html, body, #root {
-  background-color: #080808;
+  background-color: transparent;
   color: #ffffff;
   margin: 0;
   padding: 0;

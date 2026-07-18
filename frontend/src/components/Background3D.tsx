@@ -45,7 +45,7 @@ export const Background3D = () => {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: -1,
+        zIndex: 0,
         background: '#080808',
         overflow: 'hidden',
       }}

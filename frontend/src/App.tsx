@@ -11,7 +11,7 @@ function App() {
   return (
     <Router>
       <Background3D />
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-[1] min-h-screen">
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/oauth2/redirect" element={<AuthCallback />} />
