@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 
+/**
+ * REST Controller responsible for handling placement prediction requests.
+ * Calculates and returns the user's predicted placement scores across different company tiers
+ * based on their academic profile, skills, and coding statistics.
+ */
 @RestController
 @RequestMapping("/api/predict")
 @RequiredArgsConstructor
