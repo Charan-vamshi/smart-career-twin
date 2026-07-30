@@ -1,7 +1,9 @@
 {
-  "name": "frontend",
+  "name": "smart-career-twin-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "AI-powered placement prediction and personalized career roadmap generator for students",
+  "author": "Charan Vamshi",
   "type": "module",
   "scripts": {
     "dev": "vite",
