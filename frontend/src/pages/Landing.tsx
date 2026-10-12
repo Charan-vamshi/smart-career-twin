@@ -146,17 +146,21 @@ export const Landing = () => {
               onClick={handleLogin}
               className="group relative inline-flex items-center gap-3 px-9 py-4 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 cursor-pointer"
               style={{
-                background: 'linear-gradient(135deg, #FAFAFA 0%, #D4D4D8 100%)',
-                color: '#09090B',
-                boxShadow: '0 0 35px rgba(229, 193, 88, 0.22), 0 10px 30px rgba(0, 0, 0, 0.6)',
+                background: 'rgba(255,255,255,0.06)',
+                color: '#fafafa',
+                border: '1px solid rgba(255,255,255,0.18)',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 1px 0 0 rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.5)',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.boxShadow =
-                  '0 0 50px rgba(229, 193, 88, 0.45), 0 12px 35px rgba(0, 0, 0, 0.7)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.10)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.30)';
+                e.currentTarget.style.boxShadow = '0 1px 0 0 rgba(255,255,255,0.12) inset, 0 12px 40px rgba(0,0,0,0.6)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.boxShadow =
-                  '0 0 35px rgba(229, 193, 88, 0.22), 0 10px 30px rgba(0, 0, 0, 0.6)';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+                e.currentTarget.style.boxShadow = '0 1px 0 0 rgba(255,255,255,0.08) inset, 0 8px 32px rgba(0,0,0,0.5)';
               }}
             >
               Continue with Google

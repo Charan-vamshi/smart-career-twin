@@ -662,11 +662,21 @@ export const Onboarding = () => {
                 <button
                   type="button"
                   onClick={() => setStep(s => Math.min(s + 1, 4))}
-                  className="flex items-center gap-2 px-7 py-3 rounded-full text-sm font-semibold transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-7 py-3 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer"
                   style={{
-                    background: 'linear-gradient(135deg, #FAFAFA 0%, #D4D4D8 100%)',
-                    color: '#09090B',
-                    boxShadow: '0 0 25px rgba(229, 193, 88, 0.2)',
+                    background: 'rgba(255,255,255,0.07)',
+                    color: '#fafafa',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    backdropFilter: 'blur(12px)',
+                    boxShadow: '0 1px 0 0 rgba(255,255,255,0.1) inset, 0 8px 24px rgba(0,0,0,0.45)',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
                   }}
                 >
                   Continue <ChevronRight className="w-4 h-4" />
@@ -678,14 +688,26 @@ export const Onboarding = () => {
                   type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition-all"
+                  className="flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition-all duration-300"
                   style={{
-                    background: saving
-                      ? '#27272a'
-                      : 'linear-gradient(135deg, #F9E498 0%, #E5C158 100%)',
-                    color: saving ? '#71717a' : '#09090B',
-                    boxShadow: saving ? 'none' : '0 0 30px rgba(229, 193, 88, 0.35)',
+                    background: saving ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.07)',
+                    color: saving ? '#71717a' : '#fafafa',
+                    border: `1px solid ${saving ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.18)'}`,
+                    backdropFilter: 'blur(12px)',
+                    boxShadow: saving ? 'none' : '0 1px 0 0 rgba(255,255,255,0.1) inset, 0 8px 24px rgba(0,0,0,0.45)',
                     cursor: saving ? 'not-allowed' : 'pointer',
+                  }}
+                  onMouseEnter={e => {
+                    if (!saving) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!saving) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+                    }
                   }}
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}

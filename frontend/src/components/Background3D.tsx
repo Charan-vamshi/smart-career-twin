@@ -38,7 +38,7 @@ export const Background3D = () => {
       mouse.targetY = e.clientY;
       mouse.active = true;
       if (spotlightRef.current) {
-        spotlightRef.current.style.background = `radial-gradient(650px circle at ${e.clientX}px ${e.clientY}px, rgba(229, 193, 88, 0.07), rgba(255, 255, 255, 0.03) 35%, transparent 70%)`;
+        spotlightRef.current.style.background = `radial-gradient(700px circle at ${e.clientX}px ${e.clientY}px, rgba(255,255,255,0.035), transparent 65%)`;
       }
     };
 
@@ -52,10 +52,10 @@ export const Background3D = () => {
       y: Math.random() * height,
       vx: (Math.random() - 0.5) * 0.35,
       vy: (Math.random() - 0.5) * 0.35,
-      size: Math.random() * 1.8 + 0.6,
-      alpha: Math.random() * 0.55 + 0.15,
+      size: Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.45 + 0.10,
       depth: Math.random() * 0.8 + 0.2,
-      isGold: Math.random() < 0.35,
+      isGold: false,
     }));
 
     const render = () => {

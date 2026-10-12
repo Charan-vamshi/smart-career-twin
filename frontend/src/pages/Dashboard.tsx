@@ -263,7 +263,6 @@ export const Dashboard = () => {
       >
         <SpotlightCard
           className="p-10 md:p-12 text-center"
-          spotlightColor="rgba(229, 193, 88, 0.16)"
         >
           <div
             className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-medium uppercase tracking-widest mb-4"
@@ -288,11 +287,21 @@ export const Dashboard = () => {
           <MagneticButton strength={0.3}>
             <button
               onClick={() => navigate('/roadmap')}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold text-sm tracking-wide transition-all cursor-pointer"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-semibold text-sm tracking-wide transition-all duration-300 cursor-pointer"
               style={{
-                background: 'linear-gradient(135deg, #F9E498 0%, #E5C158 100%)',
-                color: '#09090B',
-                boxShadow: '0 0 35px rgba(229, 193, 88, 0.30)',
+                background: 'rgba(255,255,255,0.07)',
+                color: '#fafafa',
+                border: '1px solid rgba(255,255,255,0.18)',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 1px 0 0 rgba(255,255,255,0.1) inset, 0 8px 32px rgba(0,0,0,0.5)',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
               }}
             >
               Generate AI Roadmap
