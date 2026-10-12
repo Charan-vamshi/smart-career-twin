@@ -1,74 +1,145 @@
 import { useEffect, useRef } from 'react';
 
-const BLOBS = [
-  {
-    width: '75vw', height: '75vw', top: '-10%', left: '-10%',
-    bg: 'radial-gradient(circle, rgba(37,99,235,0.50) 0%, rgba(29,78,216,0.22) 40%, transparent 70%)',
-    animation: 'cin-drift-1 38s ease-in-out infinite',
-    parallax: 35,
-  },
-  {
-    width: '65vw', height: '65vw', bottom: '-10%', right: '-10%',
-    bg: 'radial-gradient(circle, rgba(99,102,241,0.45) 0%, rgba(79,70,229,0.18) 40%, transparent 70%)',
-    animation: 'cin-drift-2 45s ease-in-out infinite',
-    parallax: -25,
-  },
-  {
-    width: '55vw', height: '55vw', top: '25%', left: '25%',
-    bg: 'radial-gradient(circle, rgba(124,58,237,0.35) 0%, rgba(109,40,217,0.14) 40%, transparent 70%)',
-    animation: 'cin-drift-3 30s ease-in-out infinite',
-    parallax: 20,
-  },
-  {
-    width: '50vw', height: '50vw', top: '-5%', right: '5%',
-    bg: 'radial-gradient(circle, rgba(6,182,212,0.32) 0%, rgba(8,145,178,0.12) 40%, transparent 70%)',
-    animation: 'cin-drift-4 52s ease-in-out infinite',
-    parallax: -30,
-  },
-  {
-    width: '45vw', height: '45vw', bottom: '5%', left: '10%',
-    bg: 'radial-gradient(circle, rgba(59,130,246,0.42) 0%, rgba(37,99,235,0.16) 40%, transparent 70%)',
-    animation: 'cin-drift-5 35s ease-in-out infinite',
-    parallax: 40,
-  },
-];
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  depth: number;
+  isGold: boolean;
+}
 
 export const Background3D = () => {
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const lerpRef = useRef({ x: 0, y: 0 });
-  const wrapperRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const rafRef = useRef<number | undefined>(undefined);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const spotlightRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      mouseRef.current = {
-        x: (e.clientX / window.innerWidth - 0.5),
-        y: (e.clientY / window.innerHeight - 0.5),
-      };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId: number;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    const mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2, active: false };
+
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
     };
-    window.addEventListener('mousemove', onMouseMove);
 
-    const tick = () => {
-      // Smooth lerp
-      lerpRef.current.x += (mouseRef.current.x - lerpRef.current.x) * 0.04;
-      lerpRef.current.y += (mouseRef.current.y - lerpRef.current.y) * 0.04;
-
-      // Move each wrapper independently — no conflict with blob CSS animation
-      wrapperRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const strength = BLOBS[i].parallax;
-        const tx = lerpRef.current.x * strength;
-        const ty = lerpRef.current.y * strength;
-        el.style.transform = `translate(${tx}px, ${ty}px)`;
-      });
-
-      rafRef.current = requestAnimationFrame(tick);
+    const handleMouseMove = (e: MouseEvent) => {
+      mouse.targetX = e.clientX;
+      mouse.targetY = e.clientY;
+      mouse.active = true;
+      if (spotlightRef.current) {
+        spotlightRef.current.style.background = `radial-gradient(650px circle at ${e.clientX}px ${e.clientY}px, rgba(229, 193, 88, 0.07), rgba(255, 255, 255, 0.03) 35%, transparent 70%)`;
+      }
     };
-    rafRef.current = requestAnimationFrame(tick);
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Create interactive particles (Monochromatic Platinum + Warm Champagne Gold pair)
+    const particleCount = Math.min(75, Math.floor((width * height) / 18000));
+    const particles: Particle[] = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      size: Math.random() * 1.8 + 0.6,
+      alpha: Math.random() * 0.55 + 0.15,
+      depth: Math.random() * 0.8 + 0.2,
+      isGold: Math.random() < 0.35,
+    }));
+
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Smoothly interpolate mouse position
+      mouse.x += (mouse.targetX - mouse.x) * 0.08;
+      mouse.y += (mouse.targetY - mouse.y) * 0.08;
+
+      const offsetX = (mouse.x - width / 2) * 0.025;
+      const offsetY = (mouse.y - height / 2) * 0.025;
+
+      // Update & draw particles
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        const drawX = p.x - offsetX * p.depth;
+        const drawY = p.y - offsetY * p.depth;
+
+        // Subtle cursor repulsion & glow boost
+        const dxMouse = drawX - mouse.x;
+        const dyMouse = drawY - mouse.y;
+        const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+        let extraAlpha = 0;
+        if (distMouse < 220) {
+          extraAlpha = (1 - distMouse / 220) * 0.45;
+          // Draw delicate connection line to cursor
+          ctx.beginPath();
+          ctx.moveTo(drawX, drawY);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = p.isGold
+            ? `rgba(229, 193, 88, ${(1 - distMouse / 220) * 0.22})`
+            : `rgba(255, 255, 255, ${(1 - distMouse / 220) * 0.15})`;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        }
+
+        // Connect nearby particles into a subtle constellation
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const p2X = p2.x - offsetX * p2.depth;
+          const p2Y = p2.y - offsetY * p2.depth;
+          const dx = drawX - p2X;
+          const dy = drawY - p2Y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 130) {
+            ctx.beginPath();
+            ctx.moveTo(drawX, drawY);
+            ctx.lineTo(p2X, p2Y);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - dist / 130) * 0.06})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+
+        // Draw particle dot
+        ctx.beginPath();
+        ctx.arc(drawX, drawY, p.size, 0, Math.PI * 2);
+        if (p.isGold) {
+          ctx.fillStyle = `rgba(229, 193, 88, ${Math.min(1, p.alpha + extraAlpha)})`;
+        } else {
+          ctx.fillStyle = `rgba(244, 244, 245, ${Math.min(1, p.alpha + extraAlpha)})`;
+        }
+        ctx.fill();
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    render();
 
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
@@ -78,57 +149,67 @@ export const Background3D = () => {
         position: 'fixed',
         inset: 0,
         zIndex: 0,
-        background: '#080808',
+        background: '#060608',
         overflow: 'hidden',
+        pointerEvents: 'none',
       }}
     >
-      {BLOBS.map((blob, i) => (
-        // Outer wrapper: JS parallax via transform (no CSS animation here)
-        <div
-          key={i}
-          ref={el => { wrapperRefs.current[i] = el; }}
-          style={{
-            position: 'absolute',
-            width: blob.width,
-            height: blob.height,
-            top: blob.top ?? 'auto',
-            bottom: (blob as any).bottom ?? 'auto',
-            left: blob.left ?? 'auto',
-            right: (blob as any).right ?? 'auto',
-            willChange: 'transform',
-          }}
-        >
-          {/* Inner blob: CSS drift animation (no conflict with wrapper transform) */}
-          <div
-            className="cin-blob"
-            style={{
-              width: '100%',
-              height: '100%',
-              background: blob.bg,
-              animation: blob.animation,
-            }}
-          />
-        </div>
-      ))}
+      {/* Top atmospheric horizon glow (Platinum + Warm Champagne pair) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-25%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '90vw',
+          height: '55vh',
+          background:
+            'radial-gradient(ellipse at center, rgba(229, 193, 88, 0.10) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 75%)',
+          filter: 'blur(60px)',
+        }}
+      />
 
-      {/* Film grain */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        opacity: 0.045,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")`,
-        backgroundRepeat: 'repeat',
-        backgroundSize: '200px 200px',
-        pointerEvents: 'none',
-      }} />
+      {/* Subtle architectural dot-grid */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px)`,
+          backgroundSize: '32px 32px',
+          maskImage: 'radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 35%, #000 30%, transparent 100%)',
+        }}
+      />
 
-      {/* Vignette */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, rgba(0,0,0,0.70) 100%)',
-        pointerEvents: 'none',
-      }} />
+      {/* Interactive Cursor Spotlight */}
+      <div
+        ref={spotlightRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          transition: 'background 0.05s linear',
+        }}
+      />
+
+      {/* Interactive 2D Particle Constellation Canvas */}
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      />
+
+      {/* Cinematic Vignette */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 40%, rgba(4, 4, 5, 0.85) 100%)',
+        }}
+      />
     </div>
   );
 };

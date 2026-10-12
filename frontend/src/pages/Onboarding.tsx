@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { ChipSelect } from '../components/ChipSelect';
 import { SKILL_OPTIONS, TECH_STACK_OPTIONS } from '../api/options';
 import { MagneticButton } from '../components/MagneticButton';
+import { SpotlightCard } from '../components/SpotlightCard';
 import {
   Loader2, Plus, Trash2, ChevronRight, ChevronLeft, Check,
   GraduationCap, Wrench, FolderKanban, BarChart3
@@ -39,26 +40,34 @@ interface Stats {
 }
 
 const STEPS = [
-  { id: 1, label: 'Academic', icon: GraduationCap, desc: 'Your CGPA and academic trend' },
-  { id: 2, label: 'Skills', icon: Wrench, desc: 'Programming languages and concepts' },
-  { id: 3, label: 'Projects', icon: FolderKanban, desc: 'Projects you have built' },
-  { id: 4, label: 'Stats', icon: BarChart3, desc: 'Coding platform and GitHub activity' },
+  { id: 1, label: 'Academic', icon: GraduationCap, desc: 'CGPA & academic trajectory' },
+  { id: 2, label: 'Skills', icon: Wrench, desc: 'Languages & core concepts' },
+  { id: 3, label: 'Projects', icon: FolderKanban, desc: 'Engineering portfolio' },
+  { id: 4, label: 'Stats', icon: BarChart3, desc: 'DSA & GitHub velocity' },
 ];
 
-const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-all";
+const inputClass = "w-full px-3.5 py-2.5 rounded-xl text-sm outline-none transition-all";
 const inputStyle = {
-  background: '#0d0d0d',
-  border: '1px solid rgba(255,255,255,0.08)',
-  color: '#fff',
+  background: 'rgba(14, 14, 17, 0.85)',
+  border: '1px solid rgba(255, 255, 255, 0.09)',
+  color: '#fafafa',
 };
 
 const selectStyle = {
-  background: '#0d0d0d',
-  border: '1px solid rgba(255,255,255,0.08)',
-  color: '#fff',
+  background: '#0e0e11',
+  border: '1px solid rgba(255, 255, 255, 0.09)',
+  color: '#fafafa',
 };
 
-const labelStyle = { color: '#666', fontSize: '0.8rem', fontWeight: 500, marginBottom: '0.4rem', display: 'block' };
+const labelStyle = {
+  color: '#a1a1aa',
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  letterSpacing: '0.05em',
+  textTransform: 'uppercase' as const,
+  marginBottom: '0.45rem',
+  display: 'block',
+};
 
 export const Onboarding = () => {
   const navigate = useNavigate();
@@ -121,14 +130,11 @@ export const Onboarding = () => {
     fetchProfile();
   }, []);
 
-  // Sync selectedSkillNames → skills array
   const handleSkillNamesChange = (names: string[]) => {
     setSelectedSkillNames(names);
-    // Remove deleted
     const toDelete = skills.filter(s => !names.includes(s.skillName));
     const newDeleted = toDelete.filter(s => s.id).map(s => s.id!);
     setDeletedSkills(prev => [...new Set([...prev, ...newDeleted])]);
-    // Keep existing + add new
     const existing = skills.filter(s => names.includes(s.skillName));
     const existingNames = existing.map(s => s.skillName);
     const newOnes = names.filter(n => !existingNames.includes(n)).map(n => ({ skillName: n, proficiency: 'INTERMEDIATE' as const }));
@@ -147,7 +153,6 @@ export const Onboarding = () => {
 
       for (const id of deletedSkills) await api.delete(`/api/profile/skills/${id}`);
       for (const skill of skills) {
-        // Only POST new skills (no id) — existing ones are already in DB
         if (!skill.id) {
           await api.post('/api/profile/skills', { skillName: skill.skillName, proficiency: skill.proficiency });
         }
@@ -199,67 +204,86 @@ export const Onboarding = () => {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#3b82f6' }} />
+      <Loader2 className="w-10 h-10 animate-spin" style={{ color: '#e5c158' }} />
     </div>
   );
 
-
   return (
     <div className="min-h-screen flex" style={{ background: 'transparent' }}>
-      {/* Left Panel */}
+      {/* Left Sidebar Panel */}
       <div
         className="hidden md:flex flex-col justify-between w-80 shrink-0 p-10"
         style={{
-          background: 'rgba(10,10,10,0.85)',
-          borderRight: '1px solid rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(20px)',
+          background: 'rgba(10, 10, 12, 0.78)',
+          borderRight: '1px solid rgba(255, 255, 255, 0.07)',
+          backdropFilter: 'blur(24px)',
           position: 'sticky',
           top: 0,
           height: '100vh',
         }}
       >
         <div>
-          {/* Logo */}
-          <div className="mb-14">
-            <h2 className="text-base font-bold tracking-widest uppercase" style={{ color: '#3b82f6', letterSpacing: '0.15em' }}>
-              Smart Career Twin
-            </h2>
-            <p className="text-xs mt-1" style={{ color: '#444' }}>Build your career profile</p>
+          {/* Brand Header */}
+          <div className="mb-14 flex items-center gap-2.5">
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{
+                background: '#e5c158',
+                boxShadow: '0 0 12px rgba(229, 193, 88, 0.8)',
+              }}
+            />
+            <div>
+              <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-zinc-100">
+                Smart Career Twin
+              </h2>
+              <p className="text-[11px] text-zinc-500 mt-0.5">Profile Calibration</p>
+            </div>
           </div>
 
-          {/* Steps */}
-          <div className="space-y-2">
+          {/* Steps Navigation */}
+          <div className="space-y-2.5">
             {STEPS.map((s) => {
               const isActive = s.id === step;
               const isDone = s.id < step;
               return (
                 <div
                   key={s.id}
-                  className="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 cursor-default"
+                  onClick={() => setStep(s.id)}
+                  className="flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 cursor-pointer"
                   style={{
-                    background: isActive ? 'rgba(59,130,246,0.08)' : 'transparent',
-                    border: isActive ? '1px solid rgba(59,130,246,0.2)' : '1px solid transparent',
+                    background: isActive ? 'rgba(229, 193, 88, 0.08)' : 'transparent',
+                    border: isActive ? '1px solid rgba(229, 193, 88, 0.28)' : '1px solid transparent',
                   }}
                 >
-                  {/* Step circle */}
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300"
                     style={{
-                      background: isDone ? '#3b82f6' : isActive ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)',
-                      border: isActive ? '1px solid rgba(59,130,246,0.5)' : isDone ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                      background: isDone
+                        ? '#e5c158'
+                        : isActive
+                        ? 'rgba(229, 193, 88, 0.16)'
+                        : 'rgba(255, 255, 255, 0.04)',
+                      border: isActive
+                        ? '1px solid rgba(229, 193, 88, 0.5)'
+                        : isDone
+                        ? 'none'
+                        : '1px solid rgba(255, 255, 255, 0.08)',
                     }}
                   >
                     {isDone ? (
-                      <Check className="w-4 h-4" style={{ color: '#fff' }} />
+                      <Check className="w-4 h-4 text-zinc-950" />
                     ) : (
-                      <s.icon className="w-4 h-4" style={{ color: isActive ? '#3b82f6' : '#444' }} />
+                      <s.icon className="w-4 h-4" style={{ color: isActive ? '#e5c158' : '#52525b' }} />
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: isActive ? '#fff' : isDone ? '#aaa' : '#444' }}>
+                    <p
+                      className="text-sm font-medium"
+                      style={{ color: isActive ? '#fafafa' : isDone ? '#d4d4d8' : '#71717a' }}
+                    >
                       {s.label}
                     </p>
-                    <p className="text-xs" style={{ color: '#333' }}>{s.desc}</p>
+                    <p className="text-xs text-zinc-500">{s.desc}</p>
                   </div>
                 </div>
               );
@@ -267,36 +291,47 @@ export const Onboarding = () => {
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress Bar */}
         <div>
-          <div className="flex justify-between text-xs mb-2" style={{ color: '#444' }}>
-            <span>Progress</span>
-            <span>{Math.round(((step - 1) / 4) * 100)}%</span>
+          <div className="flex justify-between text-xs mb-2 text-zinc-400 font-medium">
+            <span>Completion</span>
+            <span style={{ color: '#e5c158' }}>{Math.round((step / 4) * 100)}%</span>
           </div>
-          <div className="w-full h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <motion.div
-              className="h-1 rounded-full"
-              style={{ background: 'linear-gradient(90deg, #2563eb, #3b82f6)' }}
-              animate={{ width: `${((step - 1) / 4) * 100}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="h-full rounded-full"
+              style={{ background: 'linear-gradient(90deg, #e5c158, #f9e498)' }}
+              animate={{ width: `${(step / 4) * 100}%` }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
             />
           </div>
         </div>
       </div>
 
-      {/* Right Panel */}
+      {/* Right Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
         <div className="flex-1 max-w-2xl w-full mx-auto px-6 md:px-10 py-16">
           <AnimatePresence mode="wait">
             {/* STEP 1: Academic */}
             {step === 1 && (
-              <motion.div key="step1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                <div className="mb-10">
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#3b82f6' }}>Step 1 of 4</p>
-                  <h1 className="text-4xl font-bold mb-3" style={{ color: '#fff' }}>Academic Profile</h1>
-                  <p className="text-sm" style={{ color: '#555' }}>Enter your CGPA and trend. All values are on a 10-point scale.</p>
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="mb-8">
+                  <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: '#e5c158' }}>
+                    01 / STEP ONE OF FOUR
+                  </p>
+                  <h1 className="text-4xl font-bold mb-2 text-zinc-100 tracking-tight">Academic Profile</h1>
+                  <p className="text-sm text-zinc-400">
+                    Enter your current CGPA and trajectory on a 10-point scale.
+                  </p>
                 </div>
-                <div className="space-y-6">
+
+                <SpotlightCard className="p-7 space-y-6">
                   <div>
                     <label style={labelStyle}>CGPA (out of 10) *</label>
                     <input
@@ -313,54 +348,68 @@ export const Onboarding = () => {
                       style={inputStyle}
                       placeholder="e.g. 8.5"
                     />
-                    <p className="mt-1.5 text-xs" style={{ color: '#444' }}>
-                      If your university uses a 4-point scale, multiply by 2.5 to convert.
+                    <p className="mt-2 text-xs text-zinc-500">
+                      Using a 4.0 scale? Multiply by 2.5 to convert.
                     </p>
                   </div>
                   <div>
-                    <label style={labelStyle}>CGPA Trend</label>
+                    <label style={labelStyle}>CGPA Trajectory</label>
                     <select
                       value={cgpaTrend}
                       onChange={e => setCgpaTrend(e.target.value as any)}
                       className={inputClass}
                       style={selectStyle}
                     >
-                      <option value="IMPROVING">📈 Improving — my grades are going up</option>
-                      <option value="STABLE">➡️ Stable — my grades are consistent</option>
-                      <option value="DECLINING">📉 Declining — my grades have dropped</option>
+                      <option value="IMPROVING">📈 Improving — grades are trending upward</option>
+                      <option value="STABLE">➡️ Stable — grades are consistent</option>
+                      <option value="DECLINING">📉 Declining — grades have dipped recently</option>
                     </select>
                   </div>
-                </div>
+                </SpotlightCard>
               </motion.div>
             )}
 
             {/* STEP 2: Skills */}
             {step === 2 && (
-              <motion.div key="step2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                <div className="mb-10">
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#3b82f6' }}>Step 2 of 4</p>
-                  <h1 className="text-4xl font-bold mb-3" style={{ color: '#fff' }}>Skills</h1>
-                  <p className="text-sm" style={{ color: '#555' }}>Search and select your skills. Then set a proficiency level for each one.</p>
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="mb-8">
+                  <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: '#e5c158' }}>
+                    02 / STEP TWO OF FOUR
+                  </p>
+                  <h1 className="text-4xl font-bold mb-2 text-zinc-100 tracking-tight">Technical Arsenal</h1>
+                  <p className="text-sm text-zinc-400">
+                    Select your programming languages, frameworks, and core computer science skills.
+                  </p>
                 </div>
-                <div className="space-y-6">
+
+                <SpotlightCard className="p-7 space-y-6">
                   <ChipSelect
-                    label="Your Skills"
+                    label="Search & Select Skills"
                     selected={selectedSkillNames}
                     options={SKILL_OPTIONS}
                     onChange={handleSkillNamesChange}
-                    placeholder="Search skills (e.g. Java, Python, React...)"
+                    placeholder="Type Java, Python, React, System Design..."
                   />
-                  {/* Proficiency per skill */}
+
                   {skills.length > 0 && (
-                    <div className="space-y-3">
-                      <label style={labelStyle}>Set Proficiency Level</label>
+                    <div className="space-y-3 pt-2">
+                      <label style={labelStyle}>Proficiency Calibration</label>
                       {skills.map((skill, i) => (
                         <div
                           key={i}
                           className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl"
-                          style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.06)' }}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            border: '1px solid rgba(255, 255, 255, 0.07)',
+                          }}
                         >
-                          <span className="text-sm font-medium" style={{ color: '#fff' }}>{skill.skillName}</span>
+                          <span className="text-sm font-medium text-zinc-200">{skill.skillName}</span>
                           <select
                             value={skill.proficiency}
                             onChange={e => {
@@ -368,8 +417,8 @@ export const Onboarding = () => {
                               s[i].proficiency = e.target.value as any;
                               setSkills(s);
                             }}
-                            className="text-sm rounded-lg px-3 py-1.5"
-                            style={{ ...selectStyle, width: 'auto', minWidth: '160px' }}
+                            className="text-xs rounded-lg px-3 py-1.5 font-medium"
+                            style={{ ...selectStyle, width: 'auto', minWidth: '155px' }}
                           >
                             <option value="BEGINNER">Beginner</option>
                             <option value="INTERMEDIATE">Intermediate</option>
@@ -380,123 +429,133 @@ export const Onboarding = () => {
                       ))}
                     </div>
                   )}
-                </div>
+                </SpotlightCard>
               </motion.div>
             )}
 
             {/* STEP 3: Projects */}
             {step === 3 && (
-              <motion.div key="step3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                <div className="mb-10">
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#3b82f6' }}>Step 3 of 4</p>
-                  <h1 className="text-4xl font-bold mb-3" style={{ color: '#fff' }}>Projects</h1>
-                  <p className="text-sm" style={{ color: '#555' }}>Add the projects you have built. The more detail, the better the prediction.</p>
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="mb-8">
+                  <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: '#e5c158' }}>
+                    03 / STEP THREE OF FOUR
+                  </p>
+                  <h1 className="text-4xl font-bold mb-2 text-zinc-100 tracking-tight">Engineering Projects</h1>
+                  <p className="text-sm text-zinc-400">
+                    Detail the systems and applications you have built and deployed.
+                  </p>
                 </div>
+
                 <div className="space-y-6">
                   {projects.map((proj, i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl p-6 space-y-4 relative"
-                      style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.06)' }}
-                    >
-                      <button
-                        onClick={() => removeProject(i)}
-                        className="absolute top-4 right-4 p-1.5 rounded-lg transition-all"
-                        style={{ color: '#ef4444', background: 'rgba(239,68,68,0.08)' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.15)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                      <p className="font-semibold text-sm" style={{ color: '#3b82f6' }}>Project {i + 1}</p>
+                    <SpotlightCard key={i} className="p-6 space-y-5 relative">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono uppercase tracking-widest" style={{ color: '#e5c158' }}>
+                          Project 0{i + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => removeProject(i)}
+                          className="p-1.5 rounded-lg transition-all cursor-pointer"
+                          style={{ color: '#f87171', background: 'rgba(239,68,68,0.1)' }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label style={labelStyle}>Category</label>
+                          <label style={labelStyle}>Domain</label>
                           <select value={proj.category} onChange={e => updateProject(i, 'category', e.target.value)} className={inputClass} style={selectStyle}>
-                            <option value="WEB">Web App</option>
-                            <option value="MOBILE">Mobile</option>
-                            <option value="AI_ML">AI / ML</option>
-                            <option value="IOT">IoT</option>
-                            <option value="SYSTEMS">Systems</option>
-                            <option value="DATA">Data</option>
+                            <option value="WEB">Web Application</option>
+                            <option value="MOBILE">Mobile App</option>
+                            <option value="AI_ML">AI / Machine Learning</option>
+                            <option value="IOT">IoT / Hardware</option>
+                            <option value="SYSTEMS">Systems / Infra</option>
+                            <option value="DATA">Data Engineering</option>
                           </select>
                         </div>
                         <div>
-                          <label style={labelStyle}>Complexity</label>
+                          <label style={labelStyle}>Architecture Complexity</label>
                           <select value={proj.complexity} onChange={e => updateProject(i, 'complexity', e.target.value)} className={inputClass} style={selectStyle}>
-                            <option value="CRUD_BASIC">Basic (CRUD / Simple)</option>
+                            <option value="CRUD_BASIC">Basic (CRUD / Standard)</option>
                             <option value="INTEGRATED_MULTI_SERVICE">Intermediate (Multi-service)</option>
                             <option value="DEPLOYED_SCALED">Advanced (Deployed & Scaled)</option>
                             <option value="RESEARCH_GRADE">Research Grade</option>
                           </select>
                         </div>
                         <div>
-                          <label style={labelStyle}>Deployment</label>
+                          <label style={labelStyle}>Deployment Status</label>
                           <select value={proj.deploymentStatus} onChange={e => updateProject(i, 'deploymentStatus', e.target.value)} className={inputClass} style={selectStyle}>
-                            <option value="LOCAL">Local Only</option>
-                            <option value="HOSTED">Hosted / Deployed</option>
-                            <option value="PRODUCTION_USERS">Production with Users</option>
+                            <option value="LOCAL">Local Repository Only</option>
+                            <option value="HOSTED">Live Cloud Hosted</option>
+                            <option value="PRODUCTION_USERS">Production with Active Users</option>
                           </select>
                         </div>
                         <div>
-                          <label style={labelStyle}>Team Size</label>
+                          <label style={labelStyle}>Team Structure</label>
                           <select value={proj.teamSize} onChange={e => updateProject(i, 'teamSize', e.target.value)} className={inputClass} style={selectStyle}>
-                            <option value="SOLO">Solo</option>
-                            <option value="TEAM">Team</option>
+                            <option value="SOLO">Solo Builder</option>
+                            <option value="TEAM">Team Collaboration</option>
                           </select>
                         </div>
                         <div>
-                          <label style={labelStyle}>Duration (weeks)</label>
-                          <input type="number" value={proj.durationWeeks} onChange={e => updateProject(i, 'durationWeeks', parseInt(e.target.value))} className={inputClass} style={inputStyle} placeholder="e.g. 8" />
+                          <label style={labelStyle}>Duration (Weeks)</label>
+                          <input type="number" value={proj.durationWeeks} onChange={e => updateProject(i, 'durationWeeks', parseInt(e.target.value))} className={inputClass} style={inputStyle} placeholder="e.g. 6" />
                         </div>
                         <div>
                           <label style={labelStyle}>Your Role</label>
-                          <input type="text" value={proj.role} onChange={e => updateProject(i, 'role', e.target.value)} className={inputClass} style={inputStyle} placeholder="e.g. Backend Dev" />
+                          <input type="text" value={proj.role} onChange={e => updateProject(i, 'role', e.target.value)} className={inputClass} style={inputStyle} placeholder="e.g. Full-Stack Lead" />
                         </div>
                       </div>
 
-                      {/* Tech Stack chip select */}
                       <ChipSelect
-                        label="Tech Stack"
+                        label="Tech Stack Used"
                         selected={proj.techStack ? proj.techStack.split(',').map(s => s.trim()).filter(Boolean) : []}
                         options={TECH_STACK_OPTIONS}
                         onChange={vals => updateProject(i, 'techStack', vals.join(', '))}
-                        placeholder="Search frameworks, tools..."
+                        placeholder="Search frameworks, databases, cloud..."
                       />
 
                       <div>
-                        <label style={labelStyle}>Outcome / What you achieved</label>
+                        <label style={labelStyle}>Key Engineering Outcome</label>
                         <textarea
                           value={proj.outcome}
                           onChange={e => updateProject(i, 'outcome', e.target.value)}
                           rows={2}
                           className={inputClass}
                           style={{ ...inputStyle, resize: 'vertical' }}
-                          placeholder="e.g. Reduced load time by 40%, 500+ users"
+                          placeholder="e.g. Automated workflow reducing latency by 45%"
                         />
                       </div>
-                    </div>
+                    </SpotlightCard>
                   ))}
 
                   <button
+                    type="button"
                     onClick={addProject}
-                    className="w-full py-4 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-4 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 transition-all cursor-pointer"
                     style={{
-                      border: '2px dashed rgba(255,255,255,0.08)',
-                      color: '#444',
-                      background: 'transparent',
+                      border: '1px dashed rgba(229, 193, 88, 0.3)',
+                      color: '#e5c158',
+                      background: 'rgba(229, 193, 88, 0.04)',
                     }}
                     onMouseEnter={e => {
-                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(59,130,246,0.4)';
-                      (e.currentTarget as HTMLElement).style.color = '#3b82f6';
+                      e.currentTarget.style.background = 'rgba(229, 193, 88, 0.10)';
+                      e.currentTarget.style.borderColor = 'rgba(229, 193, 88, 0.55)';
                     }}
                     onMouseLeave={e => {
-                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)';
-                      (e.currentTarget as HTMLElement).style.color = '#444';
+                      e.currentTarget.style.background = 'rgba(229, 193, 88, 0.04)';
+                      e.currentTarget.style.borderColor = 'rgba(229, 193, 88, 0.3)';
                     }}
                   >
-                    <Plus className="w-4 h-4" /> Add Project
+                    <Plus className="w-4 h-4" /> Add Engineering Project
                   </button>
                 </div>
               </motion.div>
@@ -504,16 +563,28 @@ export const Onboarding = () => {
 
             {/* STEP 4: Stats */}
             {step === 4 && (
-              <motion.div key="step4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }}>
-                <div className="mb-10">
-                  <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#3b82f6' }}>Step 4 of 4</p>
-                  <h1 className="text-4xl font-bold mb-3" style={{ color: '#fff' }}>Coding & GitHub Stats</h1>
-                  <p className="text-sm" style={{ color: '#555' }}>Your activity across competitive coding platforms and GitHub.</p>
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="mb-8">
+                  <p className="text-xs font-mono uppercase tracking-widest mb-2" style={{ color: '#e5c158' }}>
+                    04 / STEP FOUR OF FOUR
+                  </p>
+                  <h1 className="text-4xl font-bold mb-2 text-zinc-100 tracking-tight">Coding & GitHub Velocity</h1>
+                  <p className="text-sm text-zinc-400">
+                    Your problem-solving consistency across LeetCode, GeeksforGeeks, and GitHub.
+                  </p>
                 </div>
-                <div className="space-y-8">
-                  {/* Coding Stats */}
-                  <div className="rounded-2xl p-6 space-y-4" style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h3 className="text-sm font-semibold" style={{ color: '#3b82f6' }}>Competitive Coding (LeetCode / GFG / etc.)</h3>
+
+                <div className="space-y-6">
+                  <SpotlightCard className="p-7 space-y-5">
+                    <h3 className="text-xs font-mono uppercase tracking-widest" style={{ color: '#e5c158' }}>
+                      Competitive Programming & DSA
+                    </h3>
                     <div>
                       <label style={labelStyle}>Total Problems Solved *</label>
                       <input
@@ -522,98 +593,103 @@ export const Onboarding = () => {
                         value={stats.totalSolved}
                         onChange={e => setStats({ ...stats, totalSolved: parseInt(e.target.value) || '' })}
                         className={inputClass}
-                        style={{ ...inputStyle, border: '1px solid rgba(59,130,246,0.3)' }}
-                        placeholder="e.g. 300"
+                        style={{ ...inputStyle, border: '1px solid rgba(229, 193, 88, 0.35)' }}
+                        placeholder="e.g. 250"
                       />
-                      <p className="mt-1.5 text-xs" style={{ color: '#444' }}>Required — combined total across all platforms.</p>
                     </div>
                     <div>
-                      <label style={labelStyle}>Difficulty Breakdown (optional)</label>
+                      <label style={labelStyle}>Difficulty Split (Optional)</label>
                       <div className="grid grid-cols-3 gap-3">
                         <div>
-                          <label className="text-xs mb-1 block" style={{ color: '#22c55e' }}>Easy</label>
+                          <label className="text-xs mb-1.5 block text-emerald-400 font-medium">Easy</label>
                           <input type="number" value={stats.easy} onChange={e => setStats({ ...stats, easy: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="0" />
                         </div>
                         <div>
-                          <label className="text-xs mb-1 block" style={{ color: '#eab308' }}>Medium</label>
+                          <label className="text-xs mb-1.5 block text-amber-400 font-medium">Medium</label>
                           <input type="number" value={stats.medium} onChange={e => setStats({ ...stats, medium: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="0" />
                         </div>
                         <div>
-                          <label className="text-xs mb-1 block" style={{ color: '#ef4444' }}>Hard</label>
+                          <label className="text-xs mb-1.5 block text-rose-400 font-medium">Hard</label>
                           <input type="number" value={stats.hard} onChange={e => setStats({ ...stats, hard: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="0" />
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </SpotlightCard>
 
-                  {/* GitHub Stats */}
-                  <div className="rounded-2xl p-6 space-y-4" style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h3 className="text-sm font-semibold" style={{ color: '#3b82f6' }}>GitHub Activity</h3>
+                  <SpotlightCard className="p-7 space-y-5">
+                    <h3 className="text-xs font-mono uppercase tracking-widest" style={{ color: '#e5c158' }}>
+                      GitHub Open-Source & Repositories
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label style={labelStyle}>Public Repos</label>
-                        <input type="number" value={stats.repoCount} onChange={e => setStats({ ...stats, repoCount: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="e.g. 20" />
+                        <input type="number" value={stats.repoCount} onChange={e => setStats({ ...stats, repoCount: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="e.g. 15" />
                       </div>
                       <div>
                         <label style={labelStyle}>Active Months</label>
-                        <input type="number" value={stats.activeMonths} onChange={e => setStats({ ...stats, activeMonths: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="e.g. 12" />
+                        <input type="number" value={stats.activeMonths} onChange={e => setStats({ ...stats, activeMonths: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="e.g. 10" />
                       </div>
                       <div>
                         <label style={labelStyle}>Total Stars</label>
-                        <input type="number" value={stats.stars} onChange={e => setStats({ ...stats, stars: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="e.g. 50" />
+                        <input type="number" value={stats.stars} onChange={e => setStats({ ...stats, stars: parseInt(e.target.value) || '' })} className={inputClass} style={inputStyle} placeholder="e.g. 25" />
                       </div>
                     </div>
-                  </div>
+                  </SpotlightCard>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-12">
+          {/* Bottom Step Controls */}
+          <div className="flex items-center justify-between mt-10">
             <button
+              type="button"
               onClick={() => setStep(s => Math.max(s - 1, 1))}
               disabled={step === 1}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all"
               style={{
-                background: step === 1 ? 'transparent' : 'rgba(255,255,255,0.05)',
-                color: step === 1 ? 'transparent' : '#aaa',
-                border: step === 1 ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                background: step === 1 ? 'transparent' : 'rgba(255, 255, 255, 0.05)',
+                color: step === 1 ? 'transparent' : '#d4d4d8',
+                border: step === 1 ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
                 cursor: step === 1 ? 'default' : 'pointer',
               }}
             >
-              <ChevronLeft className="w-4 h-4" /> Back
+              <ChevronLeft className="w-4 h-4" /> Previous
             </button>
 
             {step < 4 ? (
               <MagneticButton strength={0.25}>
                 <button
+                  type="button"
                   onClick={() => setStep(s => Math.min(s + 1, 4))}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  className="flex items-center gap-2 px-7 py-3 rounded-full text-sm font-semibold transition-all cursor-pointer"
                   style={{
-                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                    color: '#fff',
-                    boxShadow: '0 0 20px rgba(59,130,246,0.2)',
+                    background: 'linear-gradient(135deg, #FAFAFA 0%, #D4D4D8 100%)',
+                    color: '#09090B',
+                    boxShadow: '0 0 25px rgba(229, 193, 88, 0.2)',
                   }}
                 >
-                  Next <ChevronRight className="w-4 h-4" />
+                  Continue <ChevronRight className="w-4 h-4" />
                 </button>
               </MagneticButton>
             ) : (
               <MagneticButton strength={0.25}>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-bold transition-all"
+                  className="flex items-center gap-2 px-8 py-3.5 rounded-full text-sm font-bold transition-all"
                   style={{
-                    background: saving ? '#1a1a1a' : 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                    color: saving ? '#555' : '#fff',
-                    boxShadow: saving ? 'none' : '0 0 25px rgba(59,130,246,0.3)',
+                    background: saving
+                      ? '#27272a'
+                      : 'linear-gradient(135deg, #F9E498 0%, #E5C158 100%)',
+                    color: saving ? '#71717a' : '#09090B',
+                    boxShadow: saving ? 'none' : '0 0 30px rgba(229, 193, 88, 0.35)',
                     cursor: saving ? 'not-allowed' : 'pointer',
                   }}
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  {saving ? 'Saving...' : 'Finish & View Dashboard'}
+                  {saving ? 'Calibrating Twin...' : 'Complete & Launch Dashboard'}
                 </button>
               </MagneticButton>
             )}

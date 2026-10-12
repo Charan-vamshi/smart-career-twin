@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import api from '../api/axios';
-import { Loader2, ArrowLeft, Download } from 'lucide-react';
+import { SpotlightCard } from '../components/SpotlightCard';
+import { Loader2, ArrowLeft, Download, Copy, Check, Sparkles, RefreshCw } from 'lucide-react';
 
 export const Roadmap = () => {
   const navigate = useNavigate();
@@ -11,27 +12,29 @@ export const Roadmap = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [coldStart, setColdStart] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
+  const fetchRoadmap = async () => {
+    setLoading(true);
+    setError(null);
     const coldStartTimer = setTimeout(() => {
       setColdStart(true);
     }, 5000);
 
-    const fetchRoadmap = async () => {
-      try {
-        const res = await api.post('/api/roadmap');
-        setRoadmap(res.data.roadmap);
-      } catch (err) {
-        console.error("Error fetching roadmap", err);
-        setError("Failed to generate your roadmap. Please try again.");
-      } finally {
-        clearTimeout(coldStartTimer);
-        setLoading(false);
-      }
-    };
-    fetchRoadmap();
+    try {
+      const res = await api.post('/api/roadmap');
+      setRoadmap(res.data.roadmap);
+    } catch (err) {
+      console.error('Error fetching roadmap', err);
+      setError('Failed to generate your roadmap. Please try again.');
+    } finally {
+      clearTimeout(coldStartTimer);
+      setLoading(false);
+    }
+  };
 
-    return () => clearTimeout(coldStartTimer);
+  useEffect(() => {
+    fetchRoadmap();
   }, []);
 
   const handleDownload = () => {
@@ -47,15 +50,24 @@ export const Roadmap = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleCopy = () => {
+    if (!roadmap) return;
+    navigator.clipboard.writeText(roadmap);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 text-accent animate-spin mb-6" />
-        <h2 className="text-2xl font-bold mb-2">Generating Your Roadmap</h2>
-        <p className="text-gray-400 max-w-md text-center">
-          {coldStart 
-            ? "The server seems to be waking up from a cold start. This might take up to 50 seconds..."
-            : "Our AI is analyzing your profile to build a custom plan. This might take a few seconds..."}
+      <div className="min-h-screen flex flex-col items-center justify-center px-6">
+        <Loader2 className="w-10 h-10 animate-spin mb-5" style={{ color: '#e5c158' }} />
+        <h2 className="text-2xl font-bold mb-2 text-zinc-100 tracking-tight">
+          Architecting Your Blueprint
+        </h2>
+        <p className="text-sm text-zinc-400 max-w-md text-center leading-relaxed">
+          {coldStart
+            ? 'Waking up the AI engine. This may take a few moments...'
+            : 'Gemini AI is analyzing your academic trajectory, skills, and DSA metrics to build your execution plan...'}
         </p>
       </div>
     );
@@ -63,48 +75,114 @@ export const Roadmap = () => {
 
   if (error || !roadmap) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center bg-red-900/20 border border-red-500/50 p-8 rounded-2xl max-w-md">
-          <p className="text-red-400 mb-6">{error || "Something went wrong."}</p>
-          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-2 justify-center w-full px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors border border-slate-700">
-            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-          </button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <SpotlightCard className="p-8 max-w-md w-full text-center">
+          <p className="text-rose-400 mb-6 text-sm">{error || 'Something went wrong.'}</p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider cursor-pointer"
+              style={{
+                background: 'rgba(255, 255, 255, 0.06)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                color: '#fafafa',
+              }}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Dashboard
+            </button>
+            <button
+              onClick={fetchRoadmap}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider cursor-pointer"
+              style={{
+                background: 'rgba(229, 193, 88, 0.15)',
+                border: '1px solid rgba(229, 193, 88, 0.4)',
+                color: '#e5c158',
+              }}
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Retry
+            </button>
+          </div>
+        </SpotlightCard>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen max-w-4xl mx-auto pt-24 px-6 pb-20">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+    <div className="min-h-screen max-w-4xl mx-auto pt-14 px-6 pb-20">
+      {/* Top Action Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 pb-6 border-b border-white/8"
       >
-        <button 
+        <button
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" style={{ color: '#e5c158' }} />
+          Return to Dashboard
         </button>
-        
-        <button 
-          onClick={handleDownload}
-          className="flex items-center gap-2 px-4 py-2 bg-accent/10 hover:bg-accent/20 text-accent rounded-lg transition-colors border border-accent/20"
-        >
-          <Download className="w-4 h-4" /> Download Markdown
-        </button>
+
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all cursor-pointer"
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#d4d4d8',
+            }}
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? 'Copied' : 'Copy Text'}
+          </button>
+
+          <button
+            onClick={handleDownload}
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer"
+            style={{
+              background: 'rgba(229, 193, 88, 0.14)',
+              border: '1px solid rgba(229, 193, 88, 0.38)',
+              color: '#e5c158',
+            }}
+          >
+            <Download className="w-3.5 h-3.5" /> Export .MD
+          </button>
+        </div>
       </motion.div>
 
-      <motion.div 
+      {/* Blueprint Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="mb-8"
+      >
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-widest mb-3"
+          style={{
+            background: 'rgba(229, 193, 88, 0.08)',
+            border: '1px solid rgba(229, 193, 88, 0.25)',
+            color: '#e5c158',
+          }}
+        >
+          <Sparkles className="w-3 h-3" /> Personalized Execution Plan
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 tracking-tight">
+          Strategic Career Roadmap
+        </h1>
+      </motion.div>
+
+      {/* Main Content Card */}
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="bg-bg-card/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl"
+        transition={{ delay: 0.12 }}
       >
-        <div className="prose prose-invert prose-blue max-w-none prose-headings:font-bold prose-a:text-accent prose-a:no-underline hover:prose-a:underline">
-          <ReactMarkdown>{roadmap}</ReactMarkdown>
-        </div>
+        <SpotlightCard className="p-8 md:p-12">
+          <div className="prose-luxury max-w-none">
+            <ReactMarkdown>{roadmap}</ReactMarkdown>
+          </div>
+        </SpotlightCard>
       </motion.div>
     </div>
   );
